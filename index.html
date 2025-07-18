@@ -119,6 +119,12 @@
             width: 100%;
         }
 
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 2em;
+        }
+
         .right-panel {
             display: flex;
             flex-direction: column;
@@ -137,6 +143,11 @@
             border-radius: 5px;
             margin-bottom: 1.5em;
             padding: 1.5em;
+        }
+
+        #o-kalkulatorze fieldset {
+             padding-top: 0.5em;
+             padding-bottom: 0.5em;
         }
 
         legend {
@@ -241,7 +252,7 @@
             text-align: left;
         }
 
-                #podsumowanie thead th {
+        #podsumowanie thead th {
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 0.5em;
         }
@@ -391,6 +402,13 @@
     <div id="symulacja-content" class="tab-content active">
         <div class="main-container">
             <div class="left-panel">
+                <form id="o-kalkulatorze">
+                    <fieldset>
+                        <legend>O kalkulatorze</legend>
+                        <p style="text-align: justify;"><b>Kalkulator Kredytu Hipotecznego</b> to interaktywne narzędzie stworzone, aby umożliwić zrozumienie, jak działa kredyt hipoteczny i jakie są jego całkowite koszty. Aplikacja pozwala na przeprowadzenie szczegółowej symulacji harmonogramu spłaty, uwzględniając różne scenariusze, takie jak okres stałego oprocentowania czy regularne nadpłaty. Wszystkie obliczenia wykonywane są w czasie rzeczywistym w przeglądarce, bez wysyłania jakichkolwiek danych na serwer.</p>
+                        <p style="text-align: justify;"><b>Ważne:</b> Kalkulator ma charakter wyłącznie poglądowy. Wyniki symulacji są przybliżone i nie stanowią oferty handlowej ani porady finansowej. Rzeczywiste warunki kredytu mogą się różnić w zależności od oferty banku.</p>
+                    </fieldset>
+                </form>
                 <form id="kalkulator-form">
                     <fieldset>
                         <legend>Podstawowe Parametry</legend>
@@ -508,10 +526,6 @@
 
     <div id="informacje-content" class="tab-content">
         <h3>Informacje o Narzędziu</h3>
-        <h4>Czym jest ten kalkulator?</h4>
-        <p>Kalkulator Kredytu Hipotecznego to interaktywne narzędzie stworzone, aby pomóc Ci zrozumieć, jak działa kredyt hipoteczny i jakie są jego całkowite koszty. Aplikacja pozwala na przeprowadzenie szczegółowej symulacji harmonogramu spłaty, uwzględniając różne scenariusze, takie jak okres stałego oprocentowania czy regularne nadpłaty. Wszystkie obliczenia wykonywane są w czasie rzeczywistym w Twojej przeglądarce, bez wysyłania jakichkolwiek danych na serwer.</p>
-        <p><b>Ważne:</b> Kalkulator ma charakter wyłącznie poglądowy. Wyniki symulacji są przybliżone i nie stanowią oferty handlowej ani porady finansowej. Rzeczywiste warunki kredytu mogą się różnić w zależności od oferty banku.</p>
-        <hr>
         <h4>Opis Pól Formularza</h4>
         <ul>
             <li><b>Podstawowe Parametry</b>
