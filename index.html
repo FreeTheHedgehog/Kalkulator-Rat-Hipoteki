@@ -7,36 +7,37 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --background-color: #292C33; /* Ciemny grafit */
-            --text-color: #E0E0E0; /* Jasnoszary tekst */
-            --primary-color: #8A6F9F; /* Zgaszony fiolet */
-            --secondary-color: #A08BB0; /* Jaśniejszy zgaszony fiolet */
-            --container-bg-color: #3A3F47; /* Nieco jaśniejszy grafit dla kontenerów */
-            --border-color: #555B66; /* Średnioszary dla ramek */
-            --input-bg-color: #4A4F58; /* Ciemniejszy szary dla pól input */
+            --background-color: #292C33;
+            --text-color: #E0E0E0;
+            --primary-color: #8A6F9F;
+            --secondary-color: #A08BB0;
+            --container-bg-color: #3A3F47;
+            --border-color: #555B66;
+            --input-bg-color: #4A4F58;
             --input-text-color: #E0E0E0;
+            --color-positive: #28a745;
+            --color-negative: #dc3545;
+        }
 
-            /* Kolory dla wykresu - zachowujemy czytelność, ale z mniejszym nasyceniem */
-            --chart-capital-color: rgba(39, 174, 96, 0.7); /* Zielony */
-            --chart-interest-color: rgba(230, 126, 34, 0.7); /* Pomarańczowy */
-            --chart-overpayment-color: rgba(155, 89, 182, 0.7); /* Fioletowy */
-
-            /* Kolory dla porównania w podsumowaniu */
-            --color-positive: #28a745; /* Ciemnozielony */
-            --color-negative: #dc3545; /* Ciemnoczerwony */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
         }
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 2em;
+            padding: 1em;
             background-color: var(--background-color);
             color: var(--text-color);
+            min-width: 320px;
         }
 
         h1 {
             text-align: center;
             color: var(--primary-color);
+            font-size: 1.8em;
         }
 
         .tab-nav {
@@ -47,12 +48,12 @@
         }
 
         .tab-button {
-            padding: 1em 2em;
+            padding: 1em 1.5em;
             cursor: pointer;
             border: none;
             background-color: transparent;
             color: var(--text-color);
-            font-size: 1.1em;
+            font-size: 1em;
             border-bottom: 3px solid transparent;
             transition: border-color 0.3s, color 0.3s;
         }
@@ -75,7 +76,7 @@
         }
 
         #informacje-content {
-            padding: 2em;
+            padding: 1.5em;
             background-color: var(--container-bg-color);
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -108,36 +109,24 @@
 
         .main-container {
             display: flex;
-            flex-wrap: wrap; /* Pozwala na zawijanie na mniejszych ekranach */
+            flex-direction: column;
             gap: 2em;
-            width: 95%; /* Dopasowanie do szerokości ekranu */
+            width: 100%;
             margin: 2em auto;
         }
 
-        .left-panel {
-            flex: 0 0 40%; /* 40% szerokości */
-            max-width: 40%;
-            box-sizing: border-box;
+        .left-panel, .right-panel {
+            width: 100%;
         }
 
         .right-panel {
-            flex: 0 0 55%; /* 55% szerokości, aby zostawić trochę miejsca na gap */
-            max-width: 55%;
-            box-sizing: border-box;
             display: flex;
             flex-direction: column;
             gap: 2em;
         }
 
-        @media (max-width: 1024px) {
-            .left-panel, .right-panel {
-                flex: 0 0 100%;
-                max-width: 100%;
-            }
-        }
-
         form {
-            padding: 2em;
+            padding: 1.5em;
             background-color: var(--container-bg-color);
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -155,12 +144,12 @@
             color: var(--primary-color);
             font-weight: bold;
             font-size: 1.2em;
-            background-color: var(--container-bg-color); /* Tło legendy */
+            background-color: var(--container-bg-color);
         }
         
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            grid-template-columns: 1fr;
             gap: 1.5em;
         }
 
@@ -182,7 +171,6 @@
             color: var(--input-text-color);
             font-size: 1em;
             width: 100%;
-            box-sizing: border-box;
         }
         
         input[type="checkbox"] {
@@ -197,7 +185,7 @@
 
         .button-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             gap: 1em;
             margin-top: 1.5em;
         }
@@ -213,7 +201,7 @@
         }
 
         #oblicz-btn {
-            background-color: #28a745; /* Zielony */
+            background-color: #28a745;
         }
 
         #oblicz-btn:hover {
@@ -221,7 +209,7 @@
         }
 
         #export-csv {
-            background-color: #007bff; /* Niebieski */
+            background-color: #007bff;
         }
 
         #export-csv:hover {
@@ -236,33 +224,21 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        #podsumowanie fieldset {
-            border: 1px solid var(--primary-color);
-            border-radius: 5px;
-            padding: 1.5em;
-            margin: 0; /* Resetuj marginesy fieldseta w podsumowaniu */
-        }
-
-        #podsumowanie legend {
-            background-color: var(--container-bg-color);
-            color: var(--primary-color);
-        }
-
         #podsumowanie table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 1em;
-            table-layout: fixed; /* Ustawienie stałego układu tabeli */
+            table-layout: fixed;
         }
 
         #podsumowanie td, #podsumowanie th {
             padding: 0.5em;
             border: none;
-            text-align: center; /* Wyśrodkowanie wartości */
+            text-align: center;
         }
 
         #podsumowanie td:first-child, #podsumowanie th:first-child {
-            text-align: left; /* Etykiety po lewej */
+            text-align: left;
         }
 
         #podsumowanie thead th {
@@ -270,33 +246,23 @@
             padding-bottom: 0.5em;
         }
 
-        #podsumowanie .value-with-overpayment {
-            color: var(--color-positive);
-            font-weight: bold;
-        }
-
-        #podsumowanie .value-without-overpayment {
-            color: var(--color-negative);
-            font-weight: bold;
-        }
-
-        #podsumowanie .difference-value {
-            color: var(--color-positive);
-            font-weight: bold;
-        }
-
         .chart-container {
-            height: 500px; /* Zwiększona wysokość kontenera */
-            padding: 2em;
+            height: 350px;
+            padding: 1em;
             background-color: var(--container-bg-color);
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
         }
 
-        table {
-            width: 90%; /* Zmniejszona szerokość dla wyśrodkowania */
-            max-width: 1200px;
-            margin: 2em auto; /* Wyśrodkowanie tabeli */
+        .table-scroll-container {
+            width: 100%;
+            overflow-x: auto;
+            margin: 2em 0;
+        }
+
+        #harmonogram-tabela {
+            width: 100%;
+            min-width: 700px; 
             border-collapse: collapse;
         }
 
@@ -316,7 +282,7 @@
         }
         
         tbody tr:nth-child(even) {
-            background-color: #30343B; /* Nowy kolor dla parzystych wierszy */
+            background-color: #30343B;
         }
 
         .hidden {
@@ -325,11 +291,81 @@
 
         footer {
             text-align: center;
-            margin-top: 3em;
+            margin-top: 2em;
             padding: 1em;
             border-top: 1px solid var(--border-color);
             color: var(--text-color);
             font-size: 0.8em;
+        }
+
+        /* Desktop Styles */
+        @media (min-width: 1024px) {
+            body {
+                padding: 2em;
+            }
+
+            h1 {
+                font-size: 2.5em;
+            }
+
+            .tab-button {
+                font-size: 1.1em;
+                padding: 1em 2em;
+            }
+
+            .main-container {
+                flex-direction: row;
+                width: 95%;
+            }
+
+            .left-panel {
+                flex: 0 0 40%;
+            }
+
+            .right-panel {
+                flex: 0 0 calc(60% - 2em);
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            }
+
+            .button-container {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .chart-container {
+                height: 500px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 0.5em;
+            }
+
+            .main-container {
+                margin: 1em auto;
+                gap: 1em;
+            }
+
+            form, #podsumowanie, #informacje-content {
+                padding: 1em;
+            }
+
+            fieldset {
+                padding: 1em;
+            }
+
+            .tab-button {
+                padding: 0.8em 1em;
+                font-size: 0.9em;
+            }
+
+            #podsumowanie td, #podsumowanie th {
+                padding: 0.3em;
+                font-size: 0.9em;
+            }
         }
 
     </style>
@@ -442,20 +478,22 @@
             </div>
         </div>
 
-        <table id="harmonogram-tabela">
-            <thead>
-                <tr>
-                    <th>Miesiąc</th>
-                    <th>Wymagana rata</th>
-                    <th>Kapitał w racie</th>
-                    <th>Odsetki w racie</th>
-                    <th>Nadpłata</th>
-                    <th>Dodatkowe opłaty</th>
-                    <th>Pozostały kapitał</th>
-                </tr>
-            </thead>
-            <tbody id="harmonogram-cialo"></tbody>
-        </table>
+        <div class="table-scroll-container">
+            <table id="harmonogram-tabela">
+                <thead>
+                    <tr>
+                        <th>Miesiąc</th>
+                        <th>Wymagana rata</th>
+                        <th>Kapitał w racie</th>
+                        <th>Odsetki w racie</th>
+                        <th>Nadpłata</th>
+                        <th>Dodatkowe opłaty</th>
+                        <th>Pozostały kapitał</th>
+                    </tr>
+                </thead>
+                <tbody id="harmonogram-cialo"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="informacje-content" class="tab-content">
@@ -849,26 +887,32 @@
                             {
                                 label: 'Kapitał w racie',
                                 data: wynik.harmonogram.map(w => w.kapital_w_racie),
-                                backgroundColor: 'rgba(39, 174, 96, 0.7)', // Zielony
+                                backgroundColor: 'rgba(39, 174, 96, 0.7)',
                                 borderColor: '#27ae60',
                                 fill: true,
-                                tension: 0.4
+                                tension: 0.4,
+                                pointRadius: 0,
+                                borderWidth: 2
                             },
                             {
                                 label: 'Odsetki w racie',
                                 data: wynik.harmonogram.map(w => w.odsetki_w_racie),
-                                backgroundColor: 'rgba(230, 126, 34, 0.7)', // Pomarańczowy
+                                backgroundColor: 'rgba(230, 126, 34, 0.7)',
                                 borderColor: '#e67e22',
                                 fill: true,
-                                tension: 0.4
+                                tension: 0.4,
+                                pointRadius: 0,
+                                borderWidth: 2
                             },
                             {
                                 label: 'Nadpłata',
                                 data: wynik.harmonogram.map(w => w.nadplata),
-                                backgroundColor: 'rgba(155, 89, 182, 0.7)', // Fioletowy
+                                backgroundColor: 'rgba(155, 89, 182, 0.7)',
                                 borderColor: '#9b59b6',
                                 fill: true,
-                                tension: 0.4
+                                tension: 0.4,
+                                pointRadius: 0,
+                                borderWidth: 2
                             }
                         ]
                     },
