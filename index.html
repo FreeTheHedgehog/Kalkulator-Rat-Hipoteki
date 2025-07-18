@@ -39,6 +39,73 @@
             color: var(--primary-color);
         }
 
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2em;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            padding: 1em 2em;
+            cursor: pointer;
+            border: none;
+            background-color: transparent;
+            color: var(--text-color);
+            font-size: 1.1em;
+            border-bottom: 3px solid transparent;
+            transition: border-color 0.3s, color 0.3s;
+        }
+
+        .tab-button:hover {
+            color: var(--secondary-color);
+        }
+
+        .tab-button.active {
+            color: var(--primary-color);
+            border-bottom: 3px solid var(--primary-color);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        #informacje-content {
+            padding: 2em;
+            background-color: var(--container-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        #informacje-content h3 {
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5em;
+        }
+        
+        #informacje-content h4 {
+            color: var(--secondary-color);
+        }
+
+        #informacje-content ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #informacje-content li {
+            margin-bottom: 1em;
+        }
+
+        #informacje-content strong {
+            color: var(--text-color);
+        }
+
         .main-container {
             display: flex;
             flex-wrap: wrap; /* Pozwala na zawijanie na mniejszych ekranach */
@@ -128,10 +195,15 @@
             margin-bottom: 1em;
         }
 
-        button[type="submit"] {
-            grid-column: 1 / -1;
+        .button-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1em;
+            margin-top: 1.5em;
+        }
+
+        .button-container button {
             padding: 1em;
-            background-color: var(--primary-color);
             color: var(--text-color);
             border: none;
             border-radius: 4px;
@@ -140,8 +212,20 @@
             transition: background-color 0.3s;
         }
 
-        button[type="submit"]:hover {
-            background-color: var(--secondary-color);
+        #oblicz-btn {
+            background-color: #28a745; /* Zielony */
+        }
+
+        #oblicz-btn:hover {
+            background-color: #218838;
+        }
+
+        #export-csv {
+            background-color: #007bff; /* Niebieski */
+        }
+
+        #export-csv:hover {
+            background-color: #0056b3;
         }
 
         #podsumowanie {
@@ -252,116 +336,179 @@
 </head>
 <body>
     <h1>Kalkulator Kredytu Hipotecznego</h1>
-    <div class="main-container">
-        <div class="left-panel">
-            <form id="kalkulator-form">
-                <fieldset>
-                    <legend>Podstawowe Parametry</legend>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="kwota_kredytu">Kwota kredytu:</label>
-                            <input type="number" id="kwota_kredytu" name="kwota_kredytu" value="300000" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="okres_kredytowania_lata">Okres kredytowania (lata):</label>
-                            <input type="number" id="okres_kredytowania_lata" name="okres_kredytowania_lata" value="30" required>
-                        </div>
-                    </div>
-                </fieldset>
 
-                <fieldset>
-                    <legend>Oprocentowanie</legend>
-                    <div class="form-grid">
-                         <div class="form-group">
-                            <label for="roczna_stopa_procentowa_zmienna">Roczna zmienna stopa (%):</label>
-                            <input type="number" step="0.01" id="roczna_stopa_procentowa_zmienna" name="roczna_stopa_procentowa_zmienna" value="8.5" required>
-                        </div>
-                    </div>
-                    <div class="toggle-group">
-                        <input type="checkbox" id="toggle-stala-stopa" name="toggle-stala-stopa" checked>
-                        <label for="toggle-stala-stopa">Uwzględnij okres stałej stopy</label>
-                    </div>
-                    <div id="sekcja-stala-stopa" class="form-grid">
-                        <div class="form-group">
-                            <label for="okres_stalej_stopy_lata">Okres stałej stopy (lata):</label>
-                            <input type="number" id="okres_stalej_stopy_lata" name="okres_stalej_stopy_lata" value="5" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="roczna_stopa_procentowa_stala">Roczna stała stopa (%):</label>
-                            <input type="number" step="0.01" id="roczna_stopa_procentowa_stala" name="roczna_stopa_procentowa_stala" value="7.5" required>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Dodatkowe Koszty</legend>
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="oplata_miesieczna">Opłata miesięczna:</label>
-                            <input type="number" step="0.01" id="oplata_miesieczna" name="oplata_miesieczna" value="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="oplata_roczna">Opłata roczna:</label>
-                            <input type="number" step="0.01" id="oplata_roczna" name="oplata_roczna" value="0" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="oplata_kapitalowa_procent">Opłata kapitałowa (%):</label>
-                            <input type="number" step="0.01" id="oplata_kapitalowa_procent" name="oplata_kapitalowa_procent" value="0" required>
-                        </div>
-                    </div>
-                </fieldset>
-
-                <fieldset>
-                    <legend>Nadpłata</legend> <!-- Przeniesiona legenda -->
-                     <div class="toggle-group">
-                        <input type="checkbox" id="toggle-nadplata" name="toggle-nadplata">
-                        <label for="toggle-nadplata">Uwzględnij nadpłatę</label>
-                    </div>
-                    <div id="sekcja-nadplata" class="hidden">
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label for="strategia_nadplaty">Strategia nadpłaty:</label>
-                                <select id="strategia_nadplaty" name="strategia_nadplaty">
-                                    <option value="brak">Brak</option>
-                                    <option value="zmniejszenie_okresu">Zmniejszenie okresu</option>
-                                    <option value="zmniejszenie_raty">Zmniejszenie raty</option>
-                                    <option value="progresywne zmniejszenie raty">Progresywne zmniejszenie raty</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label for="kwota_nadplaty">Kwota nadpłaty / Stała rata:</label>
-                                <input type="number" step="0.01" id="kwota_nadplaty" name="kwota_nadplaty" value="0">
-                            </div>
-                        </div>
-                    </div>
-                </fieldset>
-                
-                <button type="submit">Oblicz</button>
-            </form>
-        </div>
-
-        <div class="right-panel">
-            <div id="podsumowanie"></div>
-            <div class="chart-container">
-                <canvas id="wykresRaty"></canvas>
-            </div>
-        </div>
+    <div class="tab-nav">
+        <button class="tab-button active" data-tab="symulacja">Symulacja</button>
+        <button class="tab-button" data-tab="informacje">Informacje</button>
     </div>
 
-    <table id="harmonogram-tabela">
-        <thead>
-            <tr>
-                <th>Miesiąc</th>
-                <th>Wymagana rata</th>
-                <th>Kapitał w racie</th>
-                <th>Odsetki w racie</th>
-                <th>Nadpłata</th>
-                <th>Dodatkowe opłaty</th>
-                <th>Pozostały kapitał</th>
-            </tr>
-        </thead>
-        <tbody id="harmonogram-cialo"></tbody>
-    </table>
+    <div id="symulacja-content" class="tab-content active">
+        <div class="main-container">
+            <div class="left-panel">
+                <form id="kalkulator-form">
+                    <fieldset>
+                        <legend>Podstawowe Parametry</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="kwota_kredytu">Kwota kredytu:</label>
+                                <input type="number" id="kwota_kredytu" name="kwota_kredytu" value="300000" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="okres_kredytowania_lata">Okres kredytowania (lata):</label>
+                                <input type="number" id="okres_kredytowania_lata" name="okres_kredytowania_lata" value="30" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Oprocentowanie</legend>
+                        <div class="form-grid">
+                             <div class="form-group">
+                                <label for="roczna_stopa_procentowa_zmienna">Roczna zmienna stopa (%):</label>
+                                <input type="number" step="0.01" id="roczna_stopa_procentowa_zmienna" name="roczna_stopa_procentowa_zmienna" value="8.5" required>
+                            </div>
+                        </div>
+                        <div class="toggle-group">
+                            <input type="checkbox" id="toggle-stala-stopa" name="toggle-stala-stopa" checked>
+                            <label for="toggle-stala-stopa">Uwzględnij okres stałej stopy</label>
+                        </div>
+                        <div id="sekcja-stala-stopa" class="form-grid">
+                            <div class="form-group">
+                                <label for="okres_stalej_stopy_lata">Okres stałej stopy (lata):</label>
+                                <input type="number" id="okres_stalej_stopy_lata" name="okres_stalej_stopy_lata" value="5" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="roczna_stopa_procentowa_stala">Roczna stała stopa (%):</label>
+                                <input type="number" step="0.01" id="roczna_stopa_procentowa_stala" name="roczna_stopa_procentowa_stala" value="7.5" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Dodatkowe Koszty</legend>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="oplata_miesieczna">Opłata miesięczna:</label>
+                                <input type="number" step="0.01" id="oplata_miesieczna" name="oplata_miesieczna" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="oplata_roczna">Opłata roczna:</label>
+                                <input type="number" step="0.01" id="oplata_roczna" name="oplata_roczna" value="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="miesieczna_oplata_od_kapitalu_procent">Opłata od kapitału (% rocznie):</label>
+                                <input type="number" step="0.01" id="miesieczna_oplata_od_kapitalu_procent" name="miesieczna_oplata_od_kapitalu_procent" value="0" required>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Nadpłata</legend>
+                         <div class="toggle-group">
+                            <input type="checkbox" id="toggle-nadplata" name="toggle-nadplata">
+                            <label for="toggle-nadplata">Uwzględnij nadpłatę</label>
+                        </div>
+                        <div id="sekcja-nadplata" class="hidden">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="strategia_nadplaty">Strategia nadpłaty:</label>
+                                    <select id="strategia_nadplaty" name="strategia_nadplaty">
+                                        <option value="brak">Brak</option>
+                                        <option value="zmniejszenie_okresu">Skrócenie okresu</option>
+                                        <option value="zmniejszenie_raty">Zmniejszenie raty</option>
+                                        <option value="progresywne zmniejszenie raty">Progresywne zmniejszenie raty</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="kwota_nadplaty">Kwota nadpłaty / Stała rata:</label>
+                                    <input type="number" step="0.01" id="kwota_nadplaty" name="kwota_nadplaty" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+                    
+                    <div class="button-container">
+                        <button type="submit" id="oblicz-btn">Oblicz</button>
+                        <button type="button" id="export-csv" class="hidden">Eksportuj do CSV</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="right-panel">
+                <div id="podsumowanie"></div>
+                <div class="chart-container">
+                    <canvas id="wykresRaty"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <table id="harmonogram-tabela">
+            <thead>
+                <tr>
+                    <th>Miesiąc</th>
+                    <th>Wymagana rata</th>
+                    <th>Kapitał w racie</th>
+                    <th>Odsetki w racie</th>
+                    <th>Nadpłata</th>
+                    <th>Dodatkowe opłaty</th>
+                    <th>Pozostały kapitał</th>
+                </tr>
+            </thead>
+            <tbody id="harmonogram-cialo"></tbody>
+        </table>
+    </div>
+
+    <div id="informacje-content" class="tab-content">
+        <h3>Informacje o Narzędziu</h3>
+        <h4>Czym jest ten kalkulator?</h4>
+        <p>Kalkulator Kredytu Hipotecznego to interaktywne narzędzie stworzone, aby pomóc Ci zrozumieć, jak działa kredyt hipoteczny i jakie są jego całkowite koszty. Aplikacja pozwala na przeprowadzenie szczegółowej symulacji harmonogramu spłaty, uwzględniając różne scenariusze, takie jak okres stałego oprocentowania czy regularne nadpłaty. Wszystkie obliczenia wykonywane są w czasie rzeczywistym w Twojej przeglądarce, bez wysyłania jakichkolwiek danych na serwer.</p>
+        <p><b>Ważne:</b> Kalkulator ma charakter wyłącznie poglądowy. Wyniki symulacji są przybliżone i nie stanowią oferty handlowej ani porady finansowej. Rzeczywiste warunki kredytu mogą się różnić w zależności od oferty banku.</p>
+        <hr>
+        <h4>Opis Pól Formularza</h4>
+        <ul>
+            <li><b>Podstawowe Parametry</b>
+                <ul>
+                    <li><b>Kwota kredytu:</b> Całkowita suma, jaką chcesz pożyczyć od banku.</li>
+                    <li><b>Okres kredytowania (lata):</b> Liczba lat, w ciągu których planujesz spłacić kredyt.</li>
+                </ul>
+            </li>
+            <li><b>Oprocentowanie</b>
+                <ul>
+                    <li><b>Roczna zmienna stopa (%):</b> Oprocentowanie, które będzie obowiązywać po zakończeniu okresu stałej stopy. Zazwyczaj jest to suma marży banku i wskaźnika referencyjnego (np. WIBOR 3M).</li>
+                    <li><b>Uwzględnij okres stałej stopy:</b> Zaznacz, jeśli Twój kredyt (lub oferta, którą rozważasz) ma okres, w którym oprocentowanie jest niezmienne.</li>
+                    <li><b>Okres stałej stopy (lata):</b> Liczba lat, przez które oprocentowanie będzie stałe.</li>
+                    <li><b>Roczna stała stopa (%):</b> Wysokość oprocentowania w okresie stałej stopy.</li>
+                </ul>
+            </li>
+            <li><b>Dodatkowe Koszty</b>
+                <ul>
+                    <li><b>Opłata miesięczna:</b> Stała, miesięczna opłata doliczana do raty (np. za prowadzenie konta, ubezpieczenie).</li>
+                    <li><b>Opłata roczna:</b> Stała, roczna opłata (np. za ubezpieczenie nieruchomości).</li>
+                    <li><b>Miesięczna opłata od kapitału (% rocznie):</b> Dodatkowa miesięczna opłata, której wysokość zależy od kwoty kapitału pozostałego do spłaty. Jest ona obliczana na podstawie rocznej stopy procentowej. Przykładem może być ubezpieczenie na życie lub ubezpieczenie od utraty pracy, gdzie składka jest procentem od salda zadłużenia.</li>
+                </ul>
+            </li>
+            <li><b>Nadpłata</b>
+                <ul>
+                    <li><b>Uwzględnij nadpłatę:</b> Zaznacz, aby zasymulować wpływ regularnych nadpłat na kredyt.</li>
+                    <li><b>Strategia nadpłaty:</b>
+                        <ul>
+                            <li><b>Skrócenie okresu:</b> Twoja rata pozostaje na podobnym poziomie, ale dzięki nadpłatom spłacasz kredyt szybciej.</li>
+                            <li><b>Zmniejszenie raty:</b> Każda nadpłata powoduje przeliczenie i obniżenie wysokości kolejnych rat, przy zachowaniu pierwotnego okresu kredytowania.</li>
+                            <li><b>Progresywne zmniejszenie raty:</b> Deklarujesz stałą miesięczną wpłatę (np. 3000 zł). System oblicza wymaganą ratę, a cała nadwyżka Twojej wpłaty ponad tę ratę jest przeznaczana na nadpłatę kapitału.</li>
+                        </ul>
+                    </li>
+                    <li><b>Kwota nadplaty / Stała rata:</b> Wpisz kwotę regularnej miesięcznej nadpłaty lub stałej łącznej wpłaty (w zależności od wybranej strategii).</li>
+                </ul>
+            </li>
+        </ul>
+        <hr>
+        <h4>Jak interpretować wyniki?</h4>
+        <ul>
+            <li><b>Podsumowanie:</b> Sekcja pokazuje kluczowe dane dla Twojej symulacji, w tym całkowitą kwotę do spłaty, sumę odsetek i opłat. Jeśli włączysz nadpłatę, zobaczysz również, ile możesz zaoszczędzić w porównaniu do scenariusza bez nadpłat.</li>
+            <li><b>Wykres:</b> Wizualizuje strukturę Twoich miesięcznych płatności w czasie, pokazując, jak zmienia się proporcja między spłacanym kapitałem a odsetkami.</li>
+            <li><b>Tabela harmonogramu:</b> Przedstawia szczegółowy plan spłaty miesiąc po miesiącu.</li>
+        </ul>
+    </div>
 
     <footer>
         <p>&copy; 2025 Kalkulator Kredytu Hipotecznego. Wszelkie prawa zastrzeżone.</p>
@@ -378,7 +525,7 @@
         const LOCAL_STORAGE_KEY = 'kalkulatorHipotecznyDane';
         const podsumowanieDiv = document.getElementById('podsumowanie');
 
-        function _oblicz_szczegoly_kredytu(kwota_kredytu, okres_kredytowania_lata, okres_stalej_stopy_lata, roczna_stopa_procentowa_stala, roczna_stopa_procentowa_zmienna, oplata_miesieczna, oplata_roczna, oplata_kapitalowa_procent, kwota_nadplaty, strategia_nadplaty) {
+        function _oblicz_szczegoly_kredytu(kwota_kredytu, okres_kredytowania_lata, okres_stalej_stopy_lata, roczna_stopa_procentowa_stala, roczna_stopa_procentowa_zmienna, oplata_miesieczna, oplata_roczna, miesieczna_oplata_od_kapitalu_procent, kwota_nadplaty, strategia_nadplaty) {
             const okres_kredytowania_miesiace = okres_kredytowania_lata * 12;
             const okres_stalej_stopy_miesiace = okres_stalej_stopy_lata * 12;
             const miesieczna_stopa_procentowa_stala = roczna_stopa_procentowa_stala / 12 / 100;
@@ -419,7 +566,7 @@
 
                 let splata_kapitalu_w_racie = rata_standardowa - odsetki;
 
-                let oplaty_biezace = oplata_miesieczna + (pozostaly_kapital * (oplata_kapitalowa_procent / 100)) / 12;
+                let oplaty_biezace = oplata_miesieczna + (pozostaly_kapital * (miesieczna_oplata_od_kapitalu_procent / 100)) / 12;
                 if ((miesiac - 1) % 12 === 0 && miesiac > 1) {
                     oplaty_biezace += oplata_roczna;
                 }
@@ -483,15 +630,15 @@
             };
         }
 
-        function oblicz_harmonogram(principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable, monthly_fee, annual_fee, capital_fee_percentage, overpayment_amount, overpayment_strategy) {
+        function oblicz_harmonogram(principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable, monthly_fee, annual_fee, monthly_fee_from_capital_percentage, overpayment_amount, overpayment_strategy) {
             const wynik_z_nadplata = _oblicz_szczegoly_kredytu(
                 principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable,
-                monthly_fee, annual_fee, capital_fee_percentage, overpayment_amount, overpayment_strategy
+                monthly_fee, annual_fee, monthly_fee_from_capital_percentage, overpayment_amount, overpayment_strategy
             );
 
             const wynik_bez_nadplaty = _oblicz_szczegoly_kredytu(
                 principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable,
-                monthly_fee, annual_fee, capital_fee_percentage, 0, 'brak'
+                monthly_fee, annual_fee, monthly_fee_from_capital_percentage, 0, 'brak'
             );
 
             return {
@@ -552,7 +699,31 @@
             sekcjaNadplata.classList.toggle('hidden', !toggleNadplata.checked);
         }
 
-        document.addEventListener('DOMContentLoaded', wczytajStanFormularza);
+        document.addEventListener('DOMContentLoaded', () => {
+            wczytajStanFormularza();
+            document.getElementById('export-csv').addEventListener('click', exportToCSV);
+            
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabName = button.dataset.tab;
+
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    tabContents.forEach(content => {
+                        if (content.id === `${tabName}-content`) {
+                            content.classList.add('active');
+                        } else {
+                            content.classList.remove('active');
+                        }
+                    });
+                });
+            });
+        });
+
         form.addEventListener('change', () => {
             aktualizujWidocznoscSekcji();
             zapiszStanFormularza();
@@ -581,7 +752,7 @@
                     parseFloat(dane.roczna_stopa_procentowa_zmienna),
                     parseFloat(dane.oplata_miesieczna),
                     parseFloat(dane.oplata_roczna),
-                    parseFloat(dane.oplata_kapitalowa_procent),
+                    parseFloat(dane.miesieczna_oplata_od_kapitalu_procent),
                     parseFloat(dane.kwota_nadplaty || 0),
                     dane.strategia_nadplaty || 'brak'
                 );
@@ -645,6 +816,7 @@
 
                 podsumowanieHTML += `</fieldset>`;
                 podsumowanieDiv.innerHTML = podsumowanieHTML;
+                document.getElementById('export-csv').classList.remove('hidden');
 
                 const harmonogramCialo = document.getElementById('harmonogram-cialo');
                 harmonogramCialo.innerHTML = '';
@@ -735,6 +907,71 @@
                 podsumowanieDiv.innerHTML = `<p style="color: #e74c3c;">Wystąpił błąd podczas obliczeń. Sprawdź konsolę, aby uzyskać szczegóły.</p>`;
             }
         });
+
+        function exportToCSV() {
+            const params = {
+                kwota_kredytu: document.getElementById('kwota_kredytu').value,
+                okres_kredytowania_lata: document.getElementById('okres_kredytowania_lata').value,
+                roczna_stopa_procentowa_zmienna: document.getElementById('roczna_stopa_procentowa_zmienna').value,
+                uwzglednij_stala_stope: document.getElementById('toggle-stala-stopa').checked,
+                okres_stalej_stopy_lata: document.getElementById('okres_stalej_stopy_lata').value,
+                roczna_stopa_procentowa_stala: document.getElementById('roczna_stopa_procentowa_stala').value,
+                oplata_miesieczna: document.getElementById('oplata_miesieczna').value,
+                oplata_roczna: document.getElementById('oplata_roczna').value,
+                miesieczna_oplata_od_kapitalu_procent: document.getElementById('miesieczna_oplata_od_kapitalu_procent').value,
+                uwzglednij_nadplate: document.getElementById('toggle-nadplata').checked,
+                strategia_nadplaty: document.getElementById('strategia_nadplaty').value,
+                kwota_nadplaty: document.getElementById('kwota_nadplaty').value,
+            };
+
+            const summaryNode = document.querySelector('#podsumowanie fieldset');
+            if (!summaryNode) {
+                alert("Najpierw oblicz harmonogram.");
+                return;
+            }
+
+            let csvContent = "";
+
+            csvContent += "Parametry Kredytu\n";
+            for (const key in params) {
+                csvContent += `${key};"${params[key]}"\n`;
+            }
+            csvContent += "\n";
+
+            csvContent += "Podsumowanie\n";
+            const summaryTables = document.querySelectorAll('#podsumowanie table');
+            summaryTables.forEach(table => {
+                const header = Array.from(table.querySelectorAll('thead th')).map(th => `"${th.textContent.trim()}"`).join(';');
+                csvContent += header + '\n';
+                const rows = Array.from(table.querySelectorAll('tbody tr'));
+                rows.forEach(row => {
+                    const rowData = Array.from(row.querySelectorAll('td')).map(td => `"${td.textContent.trim().replace(/\n/g, ' ')}"`).join(';');
+                    csvContent += rowData + '\n';
+                });
+                csvContent += "\n";
+            });
+
+            csvContent += "Harmonogram Spłat\n";
+            const scheduleTable = document.getElementById('harmonogram-tabela');
+            const scheduleHeader = Array.from(scheduleTable.querySelectorAll('thead th')).map(th => `"${th.textContent.trim()}"`).join(';');
+            csvContent += scheduleHeader + '\n';
+
+            const scheduleRows = Array.from(scheduleTable.querySelectorAll('tbody tr'));
+            scheduleRows.forEach(row => {
+                const rowData = Array.from(row.querySelectorAll('td')).map(td => `"${td.textContent.trim()}"`).join(';');
+                csvContent += rowData + '\n';
+            });
+
+            const blob = new Blob([`\uFEFF${csvContent}`], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", "harmonogram_kredytu.csv");
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 </html>
