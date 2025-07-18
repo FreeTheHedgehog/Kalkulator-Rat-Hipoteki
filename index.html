@@ -241,9 +241,19 @@
             text-align: left;
         }
 
-        #podsumowanie thead th {
+                #podsumowanie thead th {
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 0.5em;
+        }
+
+        #podsumowanie td.difference-value {
+            color: var(--color-positive);
+            font-weight: bold;
+        }
+
+        #podsumowanie td.value-without-overpayment {
+            color: var(--color-negative);
+            font-weight: bold;
         }
 
         .chart-container {
@@ -824,7 +834,7 @@
                                 </tr>
                                 <tr>
                                     <td>Okres spłaty:</td>
-                                    <td>${wynik.rzeczywisty_okres_miesiace} miesięcy (umowny: ${wynik.umowny_okres_miesiace} miesięcy)</td>
+                                    <td>${wynik.rzeczywisty_okres_miesiace} miesięcy</td>
                                     <td class="difference-value">${wynik.roznica_okres_miesiace} miesięcy</td>
                                 </tr>
                             </tbody>
