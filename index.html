@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Kredytu Hipotecznego</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --background-color: #292C33; /* Ciemny grafit */
+            --text-color: #E0E0E0; /* Jasnoszary tekst */
+            --primary-color: #8A6F9F; /* Zgaszony fiolet */
+            --secondary-color: #A08BB0; /* Jaśniejszy zgaszony fiolet */
+            --container-bg-color: #3A3F47; /* Nieco jaśniejszy grafit dla kontenerów */
+            --border-color: #555B66; /* Średnioszary dla ramek */
+            --input-bg-color: #4A4F58; /* Ciemniejszy szary dla pól input */
+            --input-text-color: #E0E0E0;
+
+            /* Kolory dla wykresu - zachowujemy czytelność, ale z mniejszym nasyceniem */
+            --chart-capital-color: rgba(39, 174, 96, 0.7); /* Zielony */
+            --chart-interest-color: rgba(230, 126, 34, 0.7); /* Pomarańczowy */
+            --chart-overpayment-color: rgba(155, 89, 182, 0.7); /* Fioletowy */
+
+            /* Kolory dla porównania w podsumowaniu */
+            --color-positive: #28a745; /* Ciemnozielony */
+            --color-negative: #dc3545; /* Ciemnoczerwony */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 2em;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap; /* Pozwala na zawijanie na mniejszych ekranach */
+            gap: 2em;
+            width: 95%; /* Dopasowanie do szerokości ekranu */
+            margin: 2em auto;
+        }
+
+        .left-panel {
+            flex: 0 0 40%; /* 40% szerokości */
+            max-width: 40%;
+            box-sizing: border-box;
+        }
+
+        .right-panel {
+            flex: 0 0 55%; /* 55% szerokości, aby zostawić trochę miejsca na gap */
+            max-width: 55%;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            gap: 2em;
+        }
+
+        @media (max-width: 1024px) {
+            .left-panel, .right-panel {
+                flex: 0 0 100%;
+                max-width: 100%;
+            }
+        }
+
+        form {
+            padding: 2em;
+            background-color: var(--container-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        fieldset {
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            margin-bottom: 1.5em;
+            padding: 1.5em;
+        }
+
+        legend {
+            padding: 0 0.5em;
+            color: var(--primary-color);
+            font-weight: bold;
+            font-size: 1.2em;
+            background-color: var(--container-bg-color); /* Tło legendy */
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5em;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 0.5em;
+            font-weight: 500;
+        }
+
+        input[type="number"], select {
+            padding: 0.8em;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background-color: var(--input-bg-color);
+            color: var(--input-text-color);
+            font-size: 1em;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        .toggle-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1em;
+        }
+
+        button[type="submit"] {
+            grid-column: 1 / -1;
+            padding: 1em;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 4px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button[type="submit"]:hover {
+            background-color: var(--secondary-color);
+        }
+
+        #podsumowanie {
+            padding: 1.5em;
+            background-color: var(--container-bg-color);
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #podsumowanie fieldset {
+            border: 1px solid var(--primary-color);
+            border-radius: 5px;
+            padding: 1.5em;
+            margin: 0; /* Resetuj marginesy fieldseta w podsumowaniu */
+        }
+
+        #podsumowanie legend {
+            background-color: var(--container-bg-color);
+            color: var(--primary-color);
+        }
+
+        #podsumowanie table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1em;
+            table-layout: fixed; /* Ustawienie stałego układu tabeli */
+        }
+
+        #podsumowanie td, #podsumowanie th {
+            padding: 0.5em;
+            border: none;
+            text-align: center; /* Wyśrodkowanie wartości */
+        }
+
+        #podsumowanie td:first-child, #podsumowanie th:first-child {
+            text-align: left; /* Etykiety po lewej */
+        }
+
+        #podsumowanie thead th {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5em;
+        }
+
+        #podsumowanie .value-with-overpayment {
+            color: var(--color-positive);
+            font-weight: bold;
+        }
+
+        #podsumowanie .value-without-overpayment {
+            color: var(--color-negative);
+            font-weight: bold;
+        }
+
+        #podsumowanie .difference-value {
+            color: var(--color-positive);
+            font-weight: bold;
+        }
+
+        .chart-container {
+            height: 500px; /* Zwiększona wysokość kontenera */
+            padding: 2em;
+            background-color: var(--container-bg-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        table {
+            width: 90%; /* Zmniejszona szerokość dla wyśrodkowania */
+            max-width: 1200px;
+            margin: 2em auto; /* Wyśrodkowanie tabeli */
+            border-collapse: collapse;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 0.8em;
+            text-align: right;
+        }
+
+        thead {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        tbody tr:nth-child(odd) {
+            background-color: var(--container-bg-color);
+        }
+        
+        tbody tr:nth-child(even) {
+            background-color: #30343B; /* Nowy kolor dla parzystych wierszy */
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3em;
+            padding: 1em;
+            border-top: 1px solid var(--border-color);
+            color: var(--text-color);
+            font-size: 0.8em;
+        }
+
+    </style>
+</head>
+<body>
+    <h1>Kalkulator Kredytu Hipotecznego</h1>
+    <div class="main-container">
+        <div class="left-panel">
+            <form id="kalkulator-form">
+                <fieldset>
+                    <legend>Podstawowe Parametry</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="kwota_kredytu">Kwota kredytu:</label>
+                            <input type="number" id="kwota_kredytu" name="kwota_kredytu" value="300000" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="okres_kredytowania_lata">Okres kredytowania (lata):</label>
+                            <input type="number" id="okres_kredytowania_lata" name="okres_kredytowania_lata" value="30" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Oprocentowanie</legend>
+                    <div class="form-grid">
+                         <div class="form-group">
+                            <label for="roczna_stopa_procentowa_zmienna">Roczna zmienna stopa (%):</label>
+                            <input type="number" step="0.01" id="roczna_stopa_procentowa_zmienna" name="roczna_stopa_procentowa_zmienna" value="8.5" required>
+                        </div>
+                    </div>
+                    <div class="toggle-group">
+                        <input type="checkbox" id="toggle-stala-stopa" name="toggle-stala-stopa" checked>
+                        <label for="toggle-stala-stopa">Uwzględnij okres stałej stopy</label>
+                    </div>
+                    <div id="sekcja-stala-stopa" class="form-grid">
+                        <div class="form-group">
+                            <label for="okres_stalej_stopy_lata">Okres stałej stopy (lata):</label>
+                            <input type="number" id="okres_stalej_stopy_lata" name="okres_stalej_stopy_lata" value="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="roczna_stopa_procentowa_stala">Roczna stała stopa (%):</label>
+                            <input type="number" step="0.01" id="roczna_stopa_procentowa_stala" name="roczna_stopa_procentowa_stala" value="7.5" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Dodatkowe Koszty</legend>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="oplata_miesieczna">Opłata miesięczna:</label>
+                            <input type="number" step="0.01" id="oplata_miesieczna" name="oplata_miesieczna" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="oplata_roczna">Opłata roczna:</label>
+                            <input type="number" step="0.01" id="oplata_roczna" name="oplata_roczna" value="0" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="oplata_kapitalowa_procent">Opłata kapitałowa (%):</label>
+                            <input type="number" step="0.01" id="oplata_kapitalowa_procent" name="oplata_kapitalowa_procent" value="0" required>
+                        </div>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Nadpłata</legend> <!-- Przeniesiona legenda -->
+                     <div class="toggle-group">
+                        <input type="checkbox" id="toggle-nadplata" name="toggle-nadplata">
+                        <label for="toggle-nadplata">Uwzględnij nadpłatę</label>
+                    </div>
+                    <div id="sekcja-nadplata" class="hidden">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="strategia_nadplaty">Strategia nadpłaty:</label>
+                                <select id="strategia_nadplaty" name="strategia_nadplaty">
+                                    <option value="brak">Brak</option>
+                                    <option value="zmniejszenie_okresu">Zmniejszenie okresu</option>
+                                    <option value="zmniejszenie_raty">Zmniejszenie raty</option>
+                                    <option value="progresywne zmniejszenie raty">Progresywne zmniejszenie raty</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="kwota_nadplaty">Kwota nadpłaty / Stała rata:</label>
+                                <input type="number" step="0.01" id="kwota_nadplaty" name="kwota_nadplaty" value="0">
+                            </div>
+                        </div>
+                    </div>
+                </fieldset>
+                
+                <button type="submit">Oblicz</button>
+            </form>
+        </div>
+
+        <div class="right-panel">
+            <div id="podsumowanie"></div>
+            <div class="chart-container">
+                <canvas id="wykresRaty"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <table id="harmonogram-tabela">
+        <thead>
+            <tr>
+                <th>Miesiąc</th>
+                <th>Wymagana rata</th>
+                <th>Kapitał w racie</th>
+                <th>Odsetki w racie</th>
+                <th>Nadpłata</th>
+                <th>Dodatkowe opłaty</th>
+                <th>Pozostały kapitał</th>
+            </tr>
+        </thead>
+        <tbody id="harmonogram-cialo"></tbody>
+    </table>
+
+    <footer>
+        <p>&copy; 2025 Kalkulator Kredytu Hipotecznego. Wszelkie prawa zastrzeżone.</p>
+        <p>Autor: Grzegorz Bobrowski. Kalkulator ma charakter poglądowy i nie stanowi oferty handlowej ani porady finansowej. Autor nie ponosi odpowiedzialności za poprawność obliczeń ani decyzje podjęte na ich podstawie.</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('kalkulator-form');
+        const toggleStalaStopa = document.getElementById('toggle-stala-stopa');
+        const sekcjaStalaStopa = document.getElementById('sekcja-stala-stopa');
+        const toggleNadplata = document.getElementById('toggle-nadplata');
+        const sekcjaNadplata = document.getElementById('sekcja-nadplata');
+        let wykresRaty;
+        const LOCAL_STORAGE_KEY = 'kalkulatorHipotecznyDane';
+        const podsumowanieDiv = document.getElementById('podsumowanie');
+
+        function _oblicz_szczegoly_kredytu(kwota_kredytu, okres_kredytowania_lata, okres_stalej_stopy_lata, roczna_stopa_procentowa_stala, roczna_stopa_procentowa_zmienna, oplata_miesieczna, oplata_roczna, oplata_kapitalowa_procent, kwota_nadplaty, strategia_nadplaty) {
+            const okres_kredytowania_miesiace = okres_kredytowania_lata * 12;
+            const okres_stalej_stopy_miesiace = okres_stalej_stopy_lata * 12;
+            const miesieczna_stopa_procentowa_stala = roczna_stopa_procentowa_stala / 12 / 100;
+            const miesieczna_stopa_procentowa_zmienna = roczna_stopa_procentowa_zmienna / 12 / 100;
+
+            let pozostaly_kapital = kwota_kredytu;
+            const harmonogram = [];
+            let calkowite_odsetki = 0;
+            let calkowite_oplaty = 0;
+            let pozostaly_okres_miesiace = okres_kredytowania_miesiace;
+
+            let rata_bazowa_dla_skrocenia_okresu = null;
+
+            for (let miesiac = 1; miesiac <= okres_kredytowania_miesiace; miesiac++) {
+                if (pozostaly_kapital <= 0) {
+                    break;
+                }
+
+                let miesieczna_stopa_procentowa;
+                if (miesiac <= okres_stalej_stopy_miesiace) {
+                    miesieczna_stopa_procentowa = miesieczna_stopa_procentowa_stala;
+                } else {
+                    miesieczna_stopa_procentowa = miesieczna_stopa_procentowa_zmienna;
+                }
+
+                const odsetki = pozostaly_kapital * miesieczna_stopa_procentowa;
+
+                let rata_standardowa;
+                if (pozostaly_okres_miesiace <= 0) {
+                    rata_standardowa = pozostaly_kapital + odsetki;
+                } else {
+                    if (miesieczna_stopa_procentowa > 0) {
+                        rata_standardowa = (pozostaly_kapital * miesieczna_stopa_procentowa) / (1 - Math.pow(1 + miesieczna_stopa_procentowa, -pozostaly_okres_miesiace));
+                    } else {
+                        rata_standardowa = pozostaly_kapital / pozostaly_okres_miesiace;
+                    }
+                }
+
+                let splata_kapitalu_w_racie = rata_standardowa - odsetki;
+
+                let oplaty_biezace = oplata_miesieczna + (pozostaly_kapital * (oplata_kapitalowa_procent / 100)) / 12;
+                if ((miesiac - 1) % 12 === 0 && miesiac > 1) {
+                    oplaty_biezace += oplata_roczna;
+                }
+                
+                calkowite_oplaty += oplaty_biezace;
+
+                let nadplata = 0;
+                if (strategia_nadplaty === 'progresywne zmniejszenie raty') {
+                    if (kwota_nadplaty > rata_standardowa) {
+                        nadplata = kwota_nadplaty - rata_standardowa;
+                    } else {
+                        nadplata = 0;
+                    }
+                } else if (strategia_nadplaty === 'zmniejszenie_raty') {
+                    nadplata = kwota_nadplaty;
+                } else if (strategia_nadplaty === 'zmniejszenie_okresu') {
+                    if (rata_bazowa_dla_skrocenia_okresu === null || (miesiac - 1) === okres_stalej_stopy_miesiace) {
+                        if (miesieczna_stopa_procentowa > 0) {
+                            rata_bazowa_dla_skrocenia_okresu = (kwota_kredytu * miesieczna_stopa_procentowa) / (1 - Math.pow(1 + miesieczna_stopa_procentowa, -okres_kredytowania_miesiace));
+                        } else {
+                            rata_bazowa_dla_skrocenia_okresu = kwota_kredytu / okres_kredytowania_miesiace;
+                        }
+                    }
+                    rata_standardowa = rata_bazowa_dla_skrocenia_okresu;
+                    splata_kapitalu_w_racie = rata_standardowa - odsetki;
+                    nadplata = kwota_nadplaty;
+                }
+
+                let calkowita_splata_kapitalu = splata_kapitalu_w_racie + nadplata;
+
+                if (calkowita_splata_kapitalu >= pozostaly_kapital) {
+                    calkowita_splata_kapitalu = pozostaly_kapital;
+                    rata_standardowa = pozostaly_kapital + odsetki;
+                    splata_kapitalu_w_racie = pozostaly_kapital;
+                    nadplata = Math.max(0, calkowita_splata_kapitalu - splata_kapitalu_w_racie);
+                }
+                
+                pozostaly_kapital -= calkowita_splata_kapitalu;
+                calkowite_odsetki += odsetki;
+                pozostaly_okres_miesiace -= 1;
+
+                harmonogram.push({
+                    'miesiac': miesiac,
+                    'wymagana_rata': parseFloat(rata_standardowa.toFixed(2)),
+                    'kapital_w_racie': parseFloat(splata_kapitalu_w_racie.toFixed(2)),
+                    'odsetki_w_racie': parseFloat(odsetki.toFixed(2)),
+                    'nadplata': parseFloat(nadplata.toFixed(2)),
+                    'dodatkowe_oplaty': parseFloat(oplaty_biezace.toFixed(2)),
+                    'pozostaly_kapital': parseFloat(Math.max(0, pozostaly_kapital).toFixed(2))
+                });
+            }
+
+            const calkowita_kwota_do_splaty = kwota_kredytu + calkowite_odsetki + calkowite_oplaty;
+
+            return {
+                'harmonogram': harmonogram,
+                'calkowite_odsetki': parseFloat(calkowite_odsetki.toFixed(2)),
+                'calkowite_oplaty': parseFloat(calkowite_oplaty.toFixed(2)),
+                'calkowita_kwota_do_splaty': parseFloat(calkowita_kwota_do_splaty.toFixed(2)),
+                'rzeczywisty_okres_miesiace': harmonogram.length
+            };
+        }
+
+        function oblicz_harmonogram(principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable, monthly_fee, annual_fee, capital_fee_percentage, overpayment_amount, overpayment_strategy) {
+            const wynik_z_nadplata = _oblicz_szczegoly_kredytu(
+                principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable,
+                monthly_fee, annual_fee, capital_fee_percentage, overpayment_amount, overpayment_strategy
+            );
+
+            const wynik_bez_nadplaty = _oblicz_szczegoly_kredytu(
+                principal, term_years, fixed_rate_period_years, annual_rate_fixed, annual_rate_variable,
+                monthly_fee, annual_fee, capital_fee_percentage, 0, 'brak'
+            );
+
+            return {
+                'harmonogram': wynik_z_nadplata['harmonogram'],
+                'calkowite_odsetki': wynik_z_nadplata['calkowite_odsetki'],
+                'calkowite_oplaty': wynik_z_nadplata['calkowite_oplaty'],
+                'calkowita_kwota_do_splaty': wynik_z_nadplata['calkowita_kwota_do_splaty'],
+                'rzeczywisty_okres_miesiace': wynik_z_nadplata['rzeczywisty_okres_miesiace'],
+                'umowny_okres_miesiace': term_years * 12,
+
+                'calkowite_odsetki_bez_nadplaty': wynik_bez_nadplaty['calkowite_odsetki'],
+                'calkowite_oplaty_bez_nadplaty': wynik_bez_nadplaty['calkowite_oplaty'],
+                'calkowita_kwota_do_splaty_bez_nadplaty': wynik_bez_nadplaty['calkowita_kwota_do_splaty'],
+                'rzeczywisty_okres_miesiace_bez_nadplaty': wynik_bez_nadplaty['rzeczywisty_okres_miesiace'],
+
+                'roznica_odsetki': parseFloat((wynik_bez_nadplaty['calkowite_odsetki'] - wynik_z_nadplata['calkowite_odsetki']).toFixed(2)),
+                'roznica_kwota_do_splaty': parseFloat((wynik_bez_nadplaty['calkowita_kwota_do_splaty'] - wynik_z_nadplata['calkowita_kwota_do_splaty']).toFixed(2)),
+                'roznica_okres_miesiace': wynik_bez_nadplaty['rzeczywisty_okres_miesiace'] - wynik_z_nadplata['rzeczywisty_okres_miesiace'],
+                'roznica_oplaty': parseFloat((wynik_bez_nadplaty['calkowite_oplaty'] - wynik_z_nadplata['calkowite_oplaty']).toFixed(2))
+            };
+        }
+
+        function zapiszStanFormularza() {
+            const dane = {};
+            for (const element of form.elements) {
+                if (element.name) {
+                    if (element.type === 'checkbox') {
+                        dane[element.name] = element.checked;
+                    } else {
+                        dane[element.name] = element.value;
+                    }
+                }
+            }
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(dane));
+        }
+
+        function wczytajStanFormularza() {
+            const zapisaneDaneJSON = localStorage.getItem(LOCAL_STORAGE_KEY);
+            if (!zapisaneDaneJSON) return;
+
+            const zapisaneDane = JSON.parse(zapisaneDaneJSON);
+
+            for (const name in zapisaneDane) {
+                if (form.elements[name]) {
+                    const element = form.elements[name];
+                    if (element.type === 'checkbox') {
+                        element.checked = zapisaneDane[name];
+                    } else {
+                        element.value = zapisaneDane[name];
+                    }
+                }
+            }
+            aktualizujWidocznoscSekcji();
+        }
+        
+        function aktualizujWidocznoscSekcji() {
+            sekcjaStalaStopa.classList.toggle('hidden', !toggleStalaStopa.checked);
+            sekcjaNadplata.classList.toggle('hidden', !toggleNadplata.checked);
+        }
+
+        document.addEventListener('DOMContentLoaded', wczytajStanFormularza);
+        form.addEventListener('change', () => {
+            aktualizujWidocznoscSekcji();
+            zapiszStanFormularza();
+        });
+
+        form.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const dane = Object.fromEntries(formData.entries());
+
+            if (!toggleStalaStopa.checked) {
+                dane.okres_stalej_stopy_lata = '0';
+            }
+            if (!toggleNadplata.checked) {
+                dane.kwota_nadplaty = '0';
+                dane.strategia_nadplaty = 'brak';
+            }
+
+            try {
+                const wynik = oblicz_harmonogram(
+                    parseFloat(dane.kwota_kredytu),
+                    parseInt(dane.okres_kredytowania_lata),
+                    parseInt(dane.okres_stalej_stopy_lata),
+                    parseFloat(dane.roczna_stopa_procentowa_stala),
+                    parseFloat(dane.roczna_stopa_procentowa_zmienna),
+                    parseFloat(dane.oplata_miesieczna),
+                    parseFloat(dane.oplata_roczna),
+                    parseFloat(dane.oplata_kapitalowa_procent),
+                    parseFloat(dane.kwota_nadplaty || 0),
+                    dane.strategia_nadplaty || 'brak'
+                );
+
+                let podsumowanieHTML = `
+                    <fieldset>
+                        <legend>Podsumowanie</legend>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Wartość</th>
+                                    <th>Oszczędność</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Całkowita kwota do spłaty:</td>
+                                    <td>${wynik.calkowita_kwota_do_splaty.toFixed(2)} PLN</td>
+                                    <td class="difference-value">${wynik.roznica_kwota_do_splaty.toFixed(2)} PLN</td>
+                                </tr>
+                                <tr>
+                                    <td>Całkowite odsetki:</td>
+                                    <td>${wynik.calkowite_odsetki.toFixed(2)} PLN</td>
+                                    <td class="difference-value">${wynik.roznica_odsetki.toFixed(2)} PLN</td>
+                                </tr>
+                                <tr>
+                                    <td>Całkowite opłaty:</td>
+                                    <td>${wynik.calkowite_oplaty.toFixed(2)} PLN</td>
+                                    <td class="difference-value">${wynik.roznica_oplaty.toFixed(2)} PLN</td>
+                                </tr>
+                                <tr>
+                                    <td>Okres spłaty:</td>
+                                    <td>${wynik.rzeczywisty_okres_miesiace} miesięcy (umowny: ${wynik.umowny_okres_miesiace} miesięcy)</td>
+                                    <td class="difference-value">${wynik.roznica_okres_miesiace} miesięcy</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                `;
+
+                if (dane.strategia_nadplaty !== 'brak' && parseFloat(dane.kwota_nadplaty) > 0) {
+                    podsumowanieHTML += `
+                        <hr>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Bez nadpłaty</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Całkowita kwota do spłaty:</td><td class="value-without-overpayment">${wynik.calkowita_kwota_do_splaty_bez_nadplaty.toFixed(2)} PLN</td><td></td></tr>
+                                <tr><td>Całkowite odsetki:</td><td class="value-without-overpayment">${wynik.calkowite_odsetki_bez_nadplaty.toFixed(2)} PLN</td><td></td></tr>
+                                <tr><td>Całkowite opłaty:</td><td class="value-without-overpayment">${wynik.calkowite_oplaty_bez_nadplaty.toFixed(2)} PLN</td><td></td></tr>
+                                <tr><td>Okres spłaty:</td><td class="value-without-overpayment">${wynik.rzeczywisty_okres_miesiace_bez_nadplaty} miesięcy</td><td></td></tr>
+                            </tbody>
+                        </table>
+                    `;
+                }
+
+                podsumowanieHTML += `</fieldset>`;
+                podsumowanieDiv.innerHTML = podsumowanieHTML;
+
+                const harmonogramCialo = document.getElementById('harmonogram-cialo');
+                harmonogramCialo.innerHTML = '';
+
+                wynik.harmonogram.forEach(wpis => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${wpis.miesiac}</td>
+                        <td>${wpis.wymagana_rata.toFixed(2)}</td>
+                        <td>${wpis.kapital_w_racie.toFixed(2)}</td>
+                        <td>${wpis.odsetki_w_racie.toFixed(2)}</td>
+                        <td>${wpis.nadplata.toFixed(2)}</td>
+                        <td>${wpis.dodatkowe_oplaty.toFixed(2)}</td>
+                        <td>${wpis.pozostaly_kapital.toFixed(2)}</td>
+                    `;
+                    harmonogramCialo.appendChild(row);
+                });
+
+                const ctx = document.getElementById('wykresRaty').getContext('2d');
+                
+                if(wykresRaty) {
+                    wykresRaty.destroy();
+                }
+
+                wykresRaty = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: wynik.harmonogram.map(w => w.miesiac),
+                        datasets: [
+                            {
+                                label: 'Kapitał w racie',
+                                data: wynik.harmonogram.map(w => w.kapital_w_racie),
+                                backgroundColor: 'rgba(39, 174, 96, 0.7)', // Zielony
+                                borderColor: '#27ae60',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Odsetki w racie',
+                                data: wynik.harmonogram.map(w => w.odsetki_w_racie),
+                                backgroundColor: 'rgba(230, 126, 34, 0.7)', // Pomarańczowy
+                                borderColor: '#e67e22',
+                                fill: true,
+                                tension: 0.4
+                            },
+                            {
+                                label: 'Nadpłata',
+                                data: wynik.harmonogram.map(w => w.nadplata),
+                                backgroundColor: 'rgba(155, 89, 182, 0.7)', // Fioletowy
+                                borderColor: '#9b59b6',
+                                fill: true,
+                                tension: 0.4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Struktura miesięcznej spłaty',
+                                color: '#ecf0f1',
+                                font: { size: 18 }
+                            },
+                            legend: {
+                                labels: {
+                                    color: '#ecf0f1'
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                stacked: true,
+                                ticks: { color: '#ecf0f1' },
+                                grid: { color: 'rgba(236, 240, 241, 0.1)' }
+                            },
+                            y: {
+                                stacked: true,
+                                ticks: { color: '#ecf0f1' },
+                                grid: { color: 'rgba(236, 240, 241, 0.1)' }
+                            }
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Błąd podczas obliczeń:', error);
+                podsumowanieDiv.innerHTML = `<p style="color: #e74c3c;">Wystąpił błąd podczas obliczeń. Sprawdź konsolę, aby uzyskać szczegóły.</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
